@@ -1,8 +1,8 @@
 node_modules/
 zkp/build/
 zkp/proofs/
+zkp/inputs/
 zkp/keys/*.ptau
 zkp/keys/*.zkey
-zkp/keys/*.json
 __pycache__/
 *.log
