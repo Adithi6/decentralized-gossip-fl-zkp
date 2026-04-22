@@ -1,6 +1,7 @@
 import logging
 import random
 import hashlib
+import subprocess
 
 from gossip.node import GossipNode
 from crypto import dilithium_utils
@@ -49,6 +50,9 @@ class GossipProtocol:
         if hash_algorithm == "sha256":
             return hashlib.sha256(message["update_bytes"]).digest()
 
+        if hash_algorithm == "sha512":
+            return hashlib.sha512(message["update_bytes"]).digest()
+
         raise ValueError(f"Unsupported hash algorithm: {hash_algorithm}")
 
     def _verify_before_forward(self, message: dict) -> tuple[bool, float]:
@@ -76,8 +80,45 @@ class GossipProtocol:
             logging.warning(
                 f"Signature verification failed for {message['client_id']}"
             )
+            return False, verify_ms
 
-        return is_valid, verify_ms
+        # -------- ZKP verification --------
+        if "zkp_proof" in message and message["zkp_proof"] is not None:
+            proof_file = message["zkp_proof"]
+            public_file = message["zkp_public"]
+
+            try:
+                result = subprocess.run(
+                    [
+                        "snarkjs",
+                        "groth16",
+                        "verify",
+                        "zkp/keys/verification_key.json",
+                        public_file,
+                        proof_file,
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+
+                if "OK!" not in result.stdout:
+                    logging.warning(
+                        f"ZKP verification failed for {message['client_id']}"
+                    )
+                    if result.stderr:
+                        logging.warning(result.stderr.strip())
+                    return False, verify_ms
+
+                logging.info(f"[ZKP] verified for {message['client_id']}")
+
+            except Exception as e:
+                logging.error(
+                    f"ZKP verification error for {message['client_id']}: {e}"
+                )
+                return False, verify_ms
+
+        return True, verify_ms
 
     def spread(
         self,

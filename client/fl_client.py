@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader
 from model.cnn import SmallCNN
 from crypto import dilithium_utils
 from utils.weights import apply_weight_arrays, weights_to_bytes
+from zkp.zkp_auth import generate_zkp_proof
 
 
 def build_model(
@@ -56,6 +57,12 @@ class FederatedClient:
         conv1_channels: int,
         conv2_channels: int,
         hidden_dim: int,
+        zkp_enabled: bool,
+        zkp_secret: str,
+        zkp_input_dir: str,
+        zkp_proof_dir: str,
+        zkp_build_dir: str,
+        zkp_zkey_path: str,
     ):
         self.client_id = client_id
         self.dataloader = dataloader
@@ -66,6 +73,13 @@ class FederatedClient:
         self.learning_rate = learning_rate
         self.crypto_scheme = crypto_scheme
         self.model_name = model_name
+
+        self.zkp_enabled = zkp_enabled
+        self.zkp_secret = zkp_secret
+        self.zkp_input_dir = zkp_input_dir
+        self.zkp_proof_dir = zkp_proof_dir
+        self.zkp_build_dir = zkp_build_dir
+        self.zkp_zkey_path = zkp_zkey_path
 
         self.model = build_model(
             model_name=self.model_name,
@@ -93,7 +107,7 @@ class FederatedClient:
             f"[{client_id}] training config | "
             f"model={self.model_name} learning_rate={self.learning_rate} "
             f"use_hash={self.use_hash} hash_algorithm={self.hash_algorithm} "
-            f"weight_dtype={self.weight_dtype}"
+            f"weight_dtype={self.weight_dtype} zkp_enabled={self.zkp_enabled}"
         )
 
     def local_train(self, global_weight_arrays=None, epochs=1):
@@ -162,6 +176,20 @@ class FederatedClient:
         )
         self.sign_ms = float(sign_ms)
 
+        zkp_proof = None
+        zkp_public = None
+
+        if self.zkp_enabled:
+            zkp_proof, zkp_public = generate_zkp_proof(
+                client_id=self.client_id,
+                secret=self.zkp_secret,
+                input_dir=self.zkp_input_dir,
+                proof_dir=self.zkp_proof_dir,
+                build_dir=self.zkp_build_dir,
+                zkey_path=self.zkp_zkey_path,
+            )
+            logging.info(f"[{self.client_id}] ZKP proof generated successfully")
+
         logging.info(
             f"[{self.client_id}] signed ({mode}) | {sign_ms:.3f} ms "
             f"scheme={self.crypto_scheme} "
@@ -177,4 +205,6 @@ class FederatedClient:
             "sign_ms": float(sign_ms),
             "is_hashed": self.use_hash,
             "hash_algorithm": hash_algorithm,
+            "zkp_proof": zkp_proof,
+            "zkp_public": zkp_public,
         }

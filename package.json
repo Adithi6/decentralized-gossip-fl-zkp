@@ -1,0 +1,25 @@
+{
+  "name": "decentralized_gossip_fl_zkp",
+  "version": "1.0.0",
+  "description": "Secure Decentralized Federated Learning using Gossip Protocol",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Adithi6/decentralized-gossip-fl-zkp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Adithi6/decentralized-gossip-fl-zkp/issues"
+  },
+  "homepage": "https://github.com/Adithi6/decentralized-gossip-fl-zkp#readme",
+  "dependencies": {
+    "circomlib": "^2.0.5",
+    "circomlibjs": "^0.1.7"
+  }
+}

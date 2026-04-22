@@ -30,6 +30,12 @@ class GossipNode:
         conv1_channels: int,
         conv2_channels: int,
         hidden_dim: int,
+        zkp_enabled: bool,
+        zkp_secret: str,
+        zkp_input_dir: str,
+        zkp_proof_dir: str,
+        zkp_build_dir: str,
+        zkp_zkey_path: str,
     ):
         self.client = FederatedClient(
             client_id=client_id,
@@ -48,6 +54,12 @@ class GossipNode:
             conv1_channels=conv1_channels,
             conv2_channels=conv2_channels,
             hidden_dim=hidden_dim,
+            zkp_enabled=zkp_enabled,
+            zkp_secret=zkp_secret,
+            zkp_input_dir=zkp_input_dir,
+            zkp_proof_dir=zkp_proof_dir,
+            zkp_build_dir=zkp_build_dir,
+            zkp_zkey_path=zkp_zkey_path,
         )
 
         self.own_submission: dict | None = None
@@ -60,7 +72,8 @@ class GossipNode:
             f"[{self.client_id}] gossip node initialized | "
             f"use_hash={use_hash} hash_algorithm={hash_algorithm} "
             f"weight_dtype={weight_dtype} learning_rate={learning_rate} "
-            f"scheme={crypto_scheme} model={model_name}"
+            f"scheme={crypto_scheme} model={model_name} "
+            f"zkp_enabled={zkp_enabled}"
         )
 
     def local_train(self, global_weight_arrays: list | None, epochs: int = 1):
@@ -102,7 +115,6 @@ class GossipNode:
 
         logging.info(f"[{self.client_id}] aggregating {len(submissions)} submission(s)")
 
-        # infer dtype from the client's configured weight dtype
         dtype_name = self.client.weight_dtype
 
         weight_sets = []
