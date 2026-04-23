@@ -1,6 +1,10 @@
 import json
-import subprocess
 import os
+import subprocess
+
+
+NODE_PATH = r"C:\Program Files\nodejs\node.exe"
+SNARKJS_PATH = r"C:\Users\ADITHI\AppData\Roaming\npm\snarkjs.cmd"
 
 
 def generate_zkp_proof(
@@ -19,32 +23,36 @@ def generate_zkp_proof(
     proof_file = os.path.join(proof_dir, f"{client_id}_proof.json")
     public_file = os.path.join(proof_dir, f"{client_id}_public.json")
 
-    # ⚠️ TEMP FIX: we assume commitment is already correct
-    # Later we can compute dynamically
     input_data = {
         "secret": secret,
-        "commitment": "4267533774488295900887461483015112262021273608761099826938271132511348470966"
+        "commitment": "4267533774488295900887461483015112262021273608761099826938271132511348470966",
     }
 
     with open(input_file, "w") as f:
-        json.dump(input_data, f)
+        json.dump(input_data, f, indent=2)
 
-    # Generate witness
-    subprocess.run([
-        "node",
-        os.path.join(build_dir, "client_auth_js", "generate_witness.js"),
-        os.path.join(build_dir, "client_auth_js", "client_auth.wasm"),
-        input_file,
-        witness_file
-    ], check=True)
+    subprocess.run(
+        [
+            NODE_PATH,
+            os.path.join(build_dir, "client_auth_js", "generate_witness.js"),
+            os.path.join(build_dir, "client_auth_js", "client_auth.wasm"),
+            input_file,
+            witness_file,
+        ],
+        check=True,
+    )
 
-    # Generate proof
-    subprocess.run([
-        "snarkjs", "groth16", "prove",
-        zkey_path,
-        witness_file,
-        proof_file,
-        public_file
-    ], check=True)
+    subprocess.run(
+        [
+            SNARKJS_PATH,
+            "groth16",
+            "prove",
+            zkey_path,
+            witness_file,
+            proof_file,
+            public_file,
+        ],
+        check=True,
+    )
 
     return proof_file, public_file

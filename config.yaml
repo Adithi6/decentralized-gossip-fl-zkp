@@ -1,6 +1,6 @@
 experiment:
-  n_clients: 4
-  n_rounds: 1
+  n_clients: 5
+  n_rounds: 3
   local_epochs: 1
 
 gossip:
@@ -45,3 +45,11 @@ data:
 
 weights:
   dtype: float32
+
+zkp:
+  enabled: true
+  secret: "12345"
+  input_dir: "zkp/inputs"
+  proof_dir: "zkp/proofs"
+  build_dir: "zkp/build"
+  zkey_path: "zkp/keys/client_auth_final.zkey"

@@ -1,8 +1,23 @@
+# Node
 node_modules/
+
+# Python virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# ZKP generated files
 zkp/build/
 zkp/proofs/
 zkp/inputs/
 zkp/keys/*.ptau
 zkp/keys/*.zkey
-__pycache__/
-*.log
+
+# OS files (optional but good)
+.DS_Store
+Thumbs.db

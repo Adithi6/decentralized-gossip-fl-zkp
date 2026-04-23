@@ -86,8 +86,16 @@ class GossipNode:
         return self.own_submission
 
     def receive_gossip(self, message: dict):
+        # Ignore your own message if it comes back through gossip
+        if message["client_id"] == self.client_id:
+            logging.warning(
+                f"[{self.client_id}] ignoring own message forwarded back through gossip"
+            )
+            return
+
+        # Deduplicate by original sender id
         already_have = any(
-            m["payload"] == message["payload"] for m in self.inbox
+            m["client_id"] == message["client_id"] for m in self.inbox
         )
 
         if not already_have:
